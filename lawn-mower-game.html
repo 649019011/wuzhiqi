@@ -303,30 +303,108 @@
         }
 
         @media (max-width: 768px) {
+            .game-container {
+                padding: 10px;
+                margin: 5px;
+            }
+
+            .game-title {
+                font-size: 20px;
+            }
+
+            .game-info {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .score-board {
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .stat-item {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
+            .controls {
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .control-btn {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+
             .mobile-controls {
                 display: block;
+                bottom: 10px;
             }
 
             .seed-packet {
-                bottom: 120px;
+                bottom: 100px;
+                right: 10px;
+                width: 50px;
+                height: 65px;
+                font-size: 24px;
             }
 
             .game-board {
-                height: 300px;
+                height: 250px;
+                max-width: 100%;
             }
 
-            .grid-cell {
-                width: 30px;
-                height: 30px;
+            .instructions {
+                padding: 8px;
+                margin-top: 8px;
             }
 
-            .mower {
-                width: 40px;
-                height: 40px;
+            .instructions h3 {
+                font-size: 12px;
             }
 
-            .mower::before {
-                font-size: 24px;
+            .instructions p {
+                font-size: 10px;
+            }
+
+            /* 移动端控制面板优化 */
+            .control-pad {
+                grid-template-columns: repeat(3, 40px);
+                grid-template-rows: repeat(3, 40px);
+                gap: 3px;
+            }
+
+            .control-btn-pad {
+                font-size: 16px;
+                border-radius: 8px;
+            }
+        }
+
+        /* 更小屏幕的优化 */
+        @media (max-width: 480px) {
+            .game-board {
+                height: 200px;
+            }
+
+            .mobile-controls {
+                bottom: 5px;
+            }
+
+            .control-pad {
+                grid-template-columns: repeat(3, 35px);
+                grid-template-rows: repeat(3, 35px);
+            }
+
+            .control-btn-pad {
+                font-size: 14px;
+            }
+
+            .seed-packet {
+                bottom: 80px;
+                width: 45px;
+                height: 60px;
+                font-size: 20px;
             }
         }
     </style>
@@ -391,9 +469,20 @@
     <script>
         class LawnMowerGame {
             constructor() {
-                this.boardWidth = 18;
-                this.boardHeight = 10;
-                this.cellSize = 40;
+                // 检测是否为移动设备
+                this.isMobile = window.innerWidth <= 768;
+
+                // 根据设备类型设置游戏参数
+                if (this.isMobile) {
+                    this.boardWidth = 12;
+                    this.boardHeight = 8;
+                    this.cellSize = 30;
+                } else {
+                    this.boardWidth = 18;
+                    this.boardHeight = 10;
+                    this.cellSize = 40;
+                }
+
                 this.board = [];
                 this.mower = { x: 0, y: 0 };
                 this.plantMode = false;
@@ -622,26 +711,59 @@
                 // 触摸事件支持
                 let touchStartX = 0;
                 let touchStartY = 0;
+                let touchStartTime = 0;
 
                 document.getElementById('gameBoard').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
                     touchStartX = e.touches[0].clientX;
                     touchStartY = e.touches[0].clientY;
+                    touchStartTime = Date.now();
+                });
+
+                document.getElementById('gameBoard').addEventListener('touchmove', (e) => {
+                    e.preventDefault();
                 });
 
                 document.getElementById('gameBoard').addEventListener('touchend', (e) => {
+                    e.preventDefault();
                     const touchEndX = e.changedTouches[0].clientX;
                     const touchEndY = e.changedTouches[0].clientY;
+                    const touchDuration = Date.now() - touchStartTime;
 
                     const deltaX = touchEndX - touchStartX;
                     const deltaY = touchEndY - touchStartY;
 
+                    // 降低滑动阈值，使控制更灵敏
+                    const minSwipeDistance = this.isMobile ? 20 : 30;
+
                     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                        if (deltaX > 30) this.moveMower(1, 0);
-                        else if (deltaX < -30) this.moveMower(-1, 0);
+                        if (deltaX > minSwipeDistance) this.moveMower(1, 0);
+                        else if (deltaX < -minSwipeDistance) this.moveMower(-1, 0);
                     } else {
-                        if (deltaY > 30) this.moveMower(0, 1);
-                        else if (deltaY < -30) this.moveMower(0, -1);
+                        if (deltaY > minSwipeDistance) this.moveMower(0, 1);
+                        else if (deltaY < -minSwipeDistance) this.moveMower(0, -1);
                     }
+                });
+
+                // 添加方向按钮触摸事件
+                if (this.isMobile) {
+                    this.setupMobileControls();
+                }
+            }
+
+            setupMobileControls() {
+                // 为移动端控制按钮添加触摸支持
+                const controlButtons = document.querySelectorAll('.control-btn-pad');
+                controlButtons.forEach(button => {
+                    button.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        button.style.background = '#4682B4';
+                    });
+
+                    button.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        button.style.background = '#87CEEB';
+                    });
                 });
             }
 
