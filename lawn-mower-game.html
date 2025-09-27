@@ -174,6 +174,105 @@
         .flower.purple { background: radial-gradient(circle, #DDA0DD, #8B008B); }
         .flower.white { background: radial-gradient(circle, #FFFFFF, #F0F8FF); }
 
+        .bug {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #8B4513;
+            border-radius: 50%;
+            z-index: 10;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: bugMove 2s infinite ease-in-out;
+        }
+
+        .bug::before {
+            content: '🐛';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            font-size: 14px;
+        }
+
+        .bug.eating {
+            animation: bugEat 0.5s infinite ease-in-out;
+        }
+
+        .guardian {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: #4169E1;
+            border-radius: 50%;
+            z-index: 15;
+            transition: all 0.4s ease;
+            animation: guardianPatrol 3s infinite linear;
+        }
+
+        .guardian::before {
+            content: '👮';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            font-size: 16px;
+        }
+
+        .guardian.chasing {
+            animation: guardianChase 0.6s infinite ease-in-out;
+        }
+
+        @keyframes bugGrow {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        @keyframes bugMove {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+        }
+
+        @keyframes bugEat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @keyframes guardianPatrol {
+            0% { transform: translateX(0px); }
+            25% { transform: translateY(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateY(10px); }
+            100% { transform: translateX(0px); }
+        }
+
+        @keyframes guardianChase {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .bug-smash {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #FF6347, #DC143C);
+            border-radius: 50%;
+            z-index: 20;
+            pointer-events: none;
+            animation: smashEffect 0.3s ease-out forwards;
+        }
+
+        .bug-smash::before {
+            content: '💥';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            font-size: 16px;
+        }
+
+        @keyframes smashEffect {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
         @keyframes flowerGrow {
             0% { transform: scale(0) rotate(0deg); }
             50% { transform: scale(0.5) rotate(180deg); }
@@ -432,6 +531,14 @@
                     <span id="flowersPlanted">0</span>
                 </div>
                 <div class="score-item">
+                    <span>🐛 消灭虫子: </span>
+                    <span id="bugsKilled">0</span>
+                </div>
+                <div class="score-item">
+                    <span>👮 守护者: </span>
+                    <span id="guardiansActive">1</span>
+                </div>
+                <div class="score-item">
                     <span>🌟 分数: </span>
                     <span id="score">0</span>
                 </div>
@@ -439,6 +546,8 @@
             <div class="controls">
                 <button class="control-btn" onclick="generateNewField()">🌱 新草地</button>
                 <button class="control-btn" onclick="resetGame()">🔄 重新开始</button>
+                <button class="control-btn" onclick="togglePlantMode()" id="plantBtn">🌱 种花模式</button>
+                <button class="control-btn" onclick="addGuardian()">👮 招募守护者</button>
             </div>
         </div>
 
@@ -450,6 +559,8 @@
             <p>🌿 驾驶割草机割草获得分数</p>
             <p>🌸 点击右下角种子包选择种植模式，在割过的草地上种花</p>
             <p>🌱 观察花朵从种子到绽放的完整生长过程</p>
+            <p>🐛 小虫子会随机出现并吃草，点击虫子可以消灭它们</p>
+            <p>👮 守护者会自动巡逻并消灭虫子，可招募更多守护者</p>
             <p>📱 移动设备可使用屏幕下方的虚拟方向键</p>
         </div>
     </div>
@@ -499,8 +610,21 @@
                 this.flowerTypes = ['red', 'blue', 'yellow', 'purple', 'white'];
                 this.currentFlowerIndex = 0;
 
+                // 虫子系统
+                this.bugs = [];
+                this.bugsKilled = 0;
+                this.maxBugs = 5;
+                this.bugSpawnRate = 0.02;
+
+                // 守护者系统
+                this.guardians = [];
+                this.guardianSpeed = 1;
+                this.guardianDetectionRange = 100;
+
                 this.initGame();
                 this.bindEvents();
+                this.startGameLoop();
+                this.spawnInitialGuardian();
             }
 
             initGame() {
@@ -790,11 +914,385 @@
                 this.score = 0;
                 this.grassCut = 0;
                 this.flowersPlanted = 0;
+                this.bugsKilled = 0;
                 this.plantMode = false;
                 this.currentFlowerIndex = 0;
+
+                // 清除所有虫子和守护者
+                this.clearAllBugs();
+                this.clearAllGuardians();
+
                 this.updateSeedPacket();
                 this.generateField();
                 this.updateScore();
+                this.spawnInitialGuardian();
+            }
+
+            // 虫子系统方法
+            spawnBug() {
+                if (this.bugs.length >= this.maxBugs) return;
+
+                const x = Math.floor(Math.random() * this.boardWidth);
+                const y = Math.floor(Math.random() * this.boardHeight);
+
+                const bug = {
+                    id: Date.now() + Math.random(),
+                    x: x,
+                    y: y,
+                    targetX: x,
+                    targetY: y,
+                    eating: false,
+                    eatTimer: 0,
+                    speed: 0.02 + Math.random() * 0.03
+                };
+
+                this.bugs.push(bug);
+                this.createBugElement(bug);
+            }
+
+            createBugElement(bug) {
+                const bugElement = document.createElement('div');
+                bugElement.className = 'bug';
+                bugElement.id = `bug-${bug.id}`;
+                bugElement.style.left = `${bug.x * this.cellSize + 2}px`;
+                bugElement.style.top = `${bug.y * this.cellSize + 2}px`;
+
+                bugElement.addEventListener('click', () => this.smashBug(bug.id));
+
+                document.getElementById('gameBoard').appendChild(bugElement);
+            }
+
+            smashBug(bugId) {
+                const bugIndex = this.bugs.findIndex(bug => bug.id === bugId);
+                if (bugIndex === -1) return;
+
+                const bug = this.bugs[bugIndex];
+                this.createSmashEffect(bug.x * this.cellSize, bug.y * this.cellSize);
+
+                // 移除虫子元素
+                const bugElement = document.getElementById(`bug-${bugId}`);
+                if (bugElement) bugElement.remove();
+
+                // 移除虫子
+                this.bugs.splice(bugIndex, 1);
+                this.bugsKilled++;
+                this.score += 10;
+                this.updateScore();
+            }
+
+            createSmashEffect(x, y) {
+                const effect = document.createElement('div');
+                effect.className = 'bug-smash';
+                effect.style.left = `${x}px`;
+                effect.style.top = `${y}px`;
+                document.getElementById('gameBoard').appendChild(effect);
+
+                setTimeout(() => effect.remove(), 300);
+            }
+
+            updateBugs() {
+                // 随机生成新虫子
+                if (Math.random() < this.bugSpawnRate && this.bugs.length < this.maxBugs) {
+                    this.spawnBug();
+                }
+
+                this.bugs.forEach(bug => {
+                    // 虫子AI行为
+                    this.updateBugBehavior(bug);
+                    this.updateBugPosition(bug);
+                });
+            }
+
+            updateBugBehavior(bug) {
+                // 检查是否有守护者 nearby
+                const nearbyGuardian = this.guardians.find(guardian => {
+                    const distance = Math.sqrt(
+                        Math.pow(guardian.x - bug.x, 2) + Math.pow(guardian.y - bug.y, 2)
+                    );
+                    return distance < this.guardianDetectionRange / this.cellSize;
+                });
+
+                if (nearbyGuardian) {
+                    // 逃离守护者
+                    const dx = bug.x - nearbyGuardian.x;
+                    const dy = bug.y - nearbyGuardian.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance > 0) {
+                        bug.targetX = bug.x + (dx / distance) * 3;
+                        bug.targetY = bug.y + (dy / distance) * 3;
+                    }
+                    bug.eating = false;
+                } else {
+                    // 寻找草地吃草
+                    if (!bug.eating && Math.random() < 0.1) {
+                        const grassCell = this.findNearbyGrass(bug.x, bug.y);
+                        if (grassCell) {
+                            bug.targetX = grassCell.x;
+                            bug.targetY = grassCell.y;
+                            bug.eating = true;
+                        }
+                    }
+                }
+
+                // 确保目标位置在边界内
+                bug.targetX = Math.max(0, Math.min(this.boardWidth - 1, bug.targetX));
+                bug.targetY = Math.max(0, Math.min(this.boardHeight - 1, bug.targetY));
+            }
+
+            findNearbyGrass(x, y) {
+                const searchRadius = 3;
+                for (let dy = -searchRadius; dy <= searchRadius; dy++) {
+                    for (let dx = -searchRadius; dx <= searchRadius; dx++) {
+                        const newX = Math.floor(x + dx);
+                        const newY = Math.floor(y + dy);
+
+                        if (newX >= 0 && newX < this.boardWidth &&
+                            newY >= 0 && newY < this.boardHeight) {
+                            const cell = this.board[newY][newX];
+                            if (cell.type === 'grass' && cell.height !== 'cut') {
+                                return { x: newX, y: newY };
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+
+            updateBugPosition(bug) {
+                const dx = bug.targetX - bug.x;
+                const dy = bug.targetY - bug.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > 0.1) {
+                    bug.x += (dx / distance) * bug.speed;
+                    bug.y += (dy / distance) * bug.speed;
+                } else {
+                    bug.x = bug.targetX;
+                    bug.y = bug.targetY;
+
+                    // 吃草行为
+                    if (bug.eating) {
+                        this.bugEatGrass(bug);
+                    } else {
+                        // 随机移动
+                        if (Math.random() < 0.05) {
+                            bug.targetX = Math.random() * this.boardWidth;
+                            bug.targetY = Math.random() * this.boardHeight;
+                        }
+                    }
+                }
+
+                // 更新虫子元素位置和状态
+                const bugElement = document.getElementById(`bug-${bug.id}`);
+                if (bugElement) {
+                    bugElement.style.left = `${bug.x * this.cellSize + 2}px`;
+                    bugElement.style.top = `${bug.y * this.cellSize + 2}px`;
+
+                    if (bug.eating) {
+                        bugElement.classList.add('eating');
+                    } else {
+                        bugElement.classList.remove('eating');
+                    }
+                }
+            }
+
+            bugEatGrass(bug) {
+                const gridX = Math.floor(bug.x);
+                const gridY = Math.floor(bug.y);
+
+                if (gridX >= 0 && gridX < this.boardWidth &&
+                    gridY >= 0 && gridY < this.boardHeight) {
+                    const cell = this.board[gridY][gridX];
+                    if (cell.type === 'grass' && cell.height !== 'cut') {
+                        // 降低草地高度
+                        if (cell.height === 'tall') {
+                            cell.height = 'grass';
+                        } else if (cell.height === 'grass') {
+                            cell.height = 'short';
+                        } else if (cell.height === 'short') {
+                            cell.height = 'cut';
+                        }
+
+                        this.updateCellDisplay(gridX, gridY);
+
+                        // 吃完后寻找新目标
+                        if (cell.height === 'cut') {
+                            bug.eating = false;
+                        }
+                    }
+                }
+            }
+
+            clearAllBugs() {
+                this.bugs.forEach(bug => {
+                    const bugElement = document.getElementById(`bug-${bug.id}`);
+                    if (bugElement) bugElement.remove();
+                });
+                this.bugs = [];
+            }
+
+            // 守护者系统方法
+            spawnInitialGuardian() {
+                this.guardians = [];
+                const guardian = {
+                    id: Date.now(),
+                    x: this.boardWidth / 2,
+                    y: this.boardHeight / 2,
+                    targetX: this.boardWidth / 2,
+                    targetY: this.boardHeight / 2,
+                    chasing: null
+                };
+                this.guardians.push(guardian);
+                this.createGuardianElement(guardian);
+                this.updateGuardianDisplay();
+            }
+
+            addGuardian() {
+                if (this.score >= 50 && this.guardians.length < 3) {
+                    this.score -= 50;
+
+                    const guardian = {
+                        id: Date.now(),
+                        x: Math.random() * this.boardWidth,
+                        y: Math.random() * this.boardHeight,
+                        targetX: Math.random() * this.boardWidth,
+                        targetY: Math.random() * this.boardHeight,
+                        chasing: null
+                    };
+
+                    this.guardians.push(guardian);
+                    this.createGuardianElement(guardian);
+                    this.updateScore();
+                    this.updateGuardianDisplay();
+                }
+            }
+
+            createGuardianElement(guardian) {
+                const guardianElement = document.createElement('div');
+                guardianElement.className = 'guardian';
+                guardianElement.id = `guardian-${guardian.id}`;
+                guardianElement.style.left = `${guardian.x * this.cellSize}px`;
+                guardianElement.style.top = `${guardian.y * this.cellSize}px`;
+
+                document.getElementById('gameBoard').appendChild(guardianElement);
+            }
+
+            updateGuardians() {
+                this.guardians.forEach(guardian => {
+                    this.updateGuardianAI(guardian);
+                    this.updateGuardianPosition(guardian);
+                });
+            }
+
+            updateGuardianAI(guardian) {
+                // 寻找最近的虫子
+                let nearestBug = null;
+                let nearestDistance = Infinity;
+
+                this.bugs.forEach(bug => {
+                    const distance = Math.sqrt(
+                        Math.pow(guardian.x - bug.x, 2) + Math.pow(guardian.y - bug.y, 2)
+                    );
+                    if (distance < nearestDistance) {
+                        nearestDistance = distance;
+                        nearestBug = bug;
+                    }
+                });
+
+                if (nearestBug && nearestDistance < this.guardianDetectionRange / this.cellSize) {
+                    // 追逐虫子
+                    guardian.targetX = nearestBug.x;
+                    guardian.targetY = nearestBug.y;
+                    guardian.chasing = nearestBug;
+
+                    // 如果足够接近，消灭虫子
+                    if (nearestDistance < 0.8) {
+                        this.guardianKillBug(guardian, nearestBug);
+                    }
+                } else {
+                    // 巡逻模式
+                    guardian.chasing = null;
+                    if (Math.random() < 0.02) {
+                        guardian.targetX = Math.random() * this.boardWidth;
+                        guardian.targetY = Math.random() * this.boardHeight;
+                    }
+                }
+            }
+
+            updateGuardianPosition(guardian) {
+                const dx = guardian.targetX - guardian.x;
+                const dy = guardian.targetY - guardian.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > 0.1) {
+                    const speed = guardian.chasing ? this.guardianSpeed * 1.5 : this.guardianSpeed;
+                    guardian.x += (dx / distance) * speed;
+                    guardian.y += (dy / distance) * speed;
+                } else {
+                    guardian.x = guardian.targetX;
+                    guardian.y = guardian.targetY;
+                }
+
+                // 更新守护者元素位置和状态
+                const guardianElement = document.getElementById(`guardian-${guardian.id}`);
+                if (guardianElement) {
+                    guardianElement.style.left = `${guardian.x * this.cellSize}px`;
+                    guardianElement.style.top = `${guardian.y * this.cellSize}px`;
+
+                    if (guardian.chasing) {
+                        guardianElement.classList.add('chasing');
+                    } else {
+                        guardianElement.classList.remove('chasing');
+                    }
+                }
+            }
+
+            guardianKillBug(guardian, bug) {
+                const bugIndex = this.bugs.findIndex(b => b.id === bug.id);
+                if (bugIndex !== -1) {
+                    this.createSmashEffect(bug.x * this.cellSize, bug.y * this.cellSize);
+
+                    // 移除虫子
+                    const bugElement = document.getElementById(`bug-${bug.id}`);
+                    if (bugElement) bugElement.remove();
+                    this.bugs.splice(bugIndex, 1);
+
+                    this.bugsKilled++;
+                    this.score += 5;
+                    guardian.chasing = null;
+
+                    this.updateScore();
+                }
+            }
+
+            clearAllGuardians() {
+                this.guardians.forEach(guardian => {
+                    const guardianElement = document.getElementById(`guardian-${guardian.id}`);
+                    if (guardianElement) guardianElement.remove();
+                });
+                this.guardians = [];
+            }
+
+            updateGuardianDisplay() {
+                document.getElementById('guardiansActive').textContent = this.guardians.length;
+            }
+
+            // 游戏循环
+            startGameLoop() {
+                setInterval(() => {
+                    this.updateBugs();
+                    this.updateGuardians();
+                }, 100);
+            }
+
+            // 更新分数显示
+            updateScore() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('grassCut').textContent = this.grassCut;
+                document.getElementById('flowersPlanted').textContent = this.flowersPlanted;
+                document.getElementById('bugsKilled').textContent = this.bugsKilled;
+                this.updateGuardianDisplay();
             }
         }
 
@@ -817,6 +1315,10 @@
         function moveMower(dx, dy) {
             console.log('移动割草机:', dx, dy); // 调试信息
             game.moveMower(dx, dy);
+        }
+
+        function addGuardian() {
+            game.addGuardian();
         }
 
         // 防止页面滚动
