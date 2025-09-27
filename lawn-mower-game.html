@@ -409,107 +409,182 @@
 
         @media (max-width: 768px) {
             .game-container {
-                padding: 10px;
-                margin: 5px;
+                padding: 5px;
+                margin: 2px;
+                height: 100vh;
+                max-height: 100vh;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
             }
 
             .game-title {
-                font-size: 20px;
+                font-size: 16px;
+                margin-bottom: 5px;
             }
 
             .game-info {
                 flex-direction: column;
-                gap: 8px;
+                gap: 4px;
+                margin-bottom: 5px;
             }
 
             .score-board {
-                justify-content: center;
-                gap: 10px;
+                justify-content: space-between;
+                gap: 2px;
+                flex-wrap: wrap;
             }
 
-            .stat-item {
-                padding: 6px 10px;
-                font-size: 11px;
+            .score-item {
+                padding: 2px 4px;
+                font-size: 9px;
+                min-width: auto;
+                flex: 0 1 auto;
+            }
+
+            .score-item span {
+                font-size: 8px;
             }
 
             .controls {
                 justify-content: center;
-                gap: 8px;
+                gap: 4px;
+                margin-bottom: 5px;
             }
 
             .control-btn {
-                padding: 6px 12px;
-                font-size: 11px;
+                padding: 4px 6px;
+                font-size: 9px;
+                min-width: auto;
             }
 
             .mobile-controls {
                 display: block;
-                bottom: 10px;
+                bottom: 5px;
             }
 
             .seed-packet {
-                bottom: 100px;
-                right: 10px;
-                width: 50px;
-                height: 65px;
-                font-size: 24px;
+                bottom: 70px;
+                right: 5px;
+                width: 35px;
+                height: 45px;
+                font-size: 18px;
             }
 
             .game-board {
-                height: 250px;
+                height: 400px;
                 max-width: 100%;
+                flex-grow: 1;
             }
 
             .instructions {
-                padding: 8px;
-                margin-top: 8px;
-            }
-
-            .instructions h3 {
-                font-size: 12px;
-            }
-
-            .instructions p {
-                font-size: 10px;
+                display: none; /* 隐藏游戏说明界面 */
             }
 
             /* 移动端控制面板优化 */
             .control-pad {
-                grid-template-columns: repeat(3, 40px);
-                grid-template-rows: repeat(3, 40px);
-                gap: 3px;
+                grid-template-columns: repeat(3, 35px);
+                grid-template-rows: repeat(3, 35px);
+                gap: 2px;
             }
 
             .control-btn-pad {
-                font-size: 16px;
-                border-radius: 8px;
+                font-size: 14px;
+                border-radius: 6px;
+            }
+
+            /* 移动端虫子和守护者尺寸优化 */
+            .bug {
+                width: 12px;
+                height: 12px;
+            }
+
+            .bug::before {
+                font-size: 10px;
+                top: -1px;
+                left: -1px;
+            }
+
+            .guardian {
+                width: 18px;
+                height: 18px;
+            }
+
+            .guardian::before {
+                font-size: 12px;
+                top: -1px;
+                left: -1px;
             }
         }
 
         /* 更小屏幕的优化 */
         @media (max-width: 480px) {
-            .game-board {
-                height: 200px;
+            .game-container {
+                padding: 3px;
+                margin: 1px;
             }
 
-            .mobile-controls {
-                bottom: 5px;
-            }
-
-            .control-pad {
-                grid-template-columns: repeat(3, 35px);
-                grid-template-rows: repeat(3, 35px);
-            }
-
-            .control-btn-pad {
+            .game-title {
                 font-size: 14px;
             }
 
+            .score-item {
+                padding: 1px 3px;
+                font-size: 8px;
+            }
+
+            .score-item span {
+                font-size: 7px;
+            }
+
+            .control-btn {
+                padding: 3px 5px;
+                font-size: 8px;
+            }
+
+            .game-board {
+                height: 320px;
+                flex-grow: 1;
+            }
+
+            .mobile-controls {
+                bottom: 3px;
+            }
+
+            .control-pad {
+                grid-template-columns: repeat(3, 30px);
+                grid-template-rows: repeat(3, 30px);
+                gap: 1px;
+            }
+
+            .control-btn-pad {
+                font-size: 12px;
+                border-radius: 4px;
+            }
+
             .seed-packet {
-                bottom: 80px;
-                width: 45px;
-                height: 60px;
-                font-size: 20px;
+                bottom: 60px;
+                width: 30px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .bug {
+                width: 10px;
+                height: 10px;
+            }
+
+            .bug::before {
+                font-size: 8px;
+            }
+
+            .guardian {
+                width: 15px;
+                height: 15px;
+            }
+
+            .guardian::before {
+                font-size: 10px;
             }
         }
     </style>
@@ -591,9 +666,17 @@
 
                 // 根据设备类型设置游戏参数
                 if (this.isMobile) {
-                    this.boardWidth = 12;
-                    this.boardHeight = 8;
-                    this.cellSize = 30;
+                    if (window.innerWidth <= 480) {
+                        // 小屏幕手机
+                        this.boardWidth = 15;
+                        this.boardHeight = 10;
+                        this.cellSize = 25;
+                    } else {
+                        // 大屏幕手机
+                        this.boardWidth = 16;
+                        this.boardHeight = 11;
+                        this.cellSize = 28;
+                    }
                 } else {
                     this.boardWidth = 18;
                     this.boardHeight = 10;
