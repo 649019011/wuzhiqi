@@ -22,11 +22,11 @@
       "use": "@vercel/static"
     },
     {
-      "src": "style.css",
+      "src": "gold-mining-style.css",
       "use": "@vercel/static"
     },
     {
-      "src": "script.js",
+      "src": "gold-mining-script.js",
       "use": "@vercel/static"
     }
   ],
@@ -64,12 +64,12 @@
       "dest": "/gold-mining.html"
     },
     {
-      "src": "/style.css",
-      "dest": "/style.css"
+      "src": "/gold-mining-style.css",
+      "dest": "/gold-mining-style.css"
     },
     {
-      "src": "/script.js",
-      "dest": "/script.js"
+      "src": "/gold-mining-script.js",
+      "dest": "/gold-mining-script.js"
     }
   ]
 }

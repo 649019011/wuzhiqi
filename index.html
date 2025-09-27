@@ -185,13 +185,17 @@
         .game-card.farm {
             background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
         }
+
+        .game-card.goldmining {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
         <div class="header">
             <h1 class="title">🎮 网页游戏合集</h1>
-            <p class="subtitle">精选三个有趣的小游戏，支持桌面端和移动端</p>
+            <p class="subtitle">精选四个有趣的小游戏，支持桌面端和移动端</p>
         </div>
 
         <div class="games-grid">
@@ -211,6 +215,12 @@
                 <span class="game-icon">🌱</span>
                 <h3 class="game-title">快乐农场</h3>
                 <p class="game-description">经营农场，种植收获作物，体验完整的农场生活</p>
+            </a>
+
+            <a href="gold-mining.html" class="game-card goldmining" onclick="navigateToGame('gold-mining.html'); return false;">
+                <span class="game-icon">💰</span>
+                <h3 class="game-title">黄金挖矿大亨</h3>
+                <p class="game-description">点击挖矿收集黄金，升级工具提高效率，解锁成就成为矿业大亨</p>
             </a>
         </div>
 

@@ -1,0 +1,261 @@
+/* 游戏容器 */
+.game-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    border-radius: 10px;
+}
+
+/* 游戏头部 */
+.game-header {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.game-title {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.resource-info {
+    display: flex;
+    gap: 30px;
+}
+
+.gold-info, .level-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2em;
+    color: white;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 2px solid #FFD700;
+}
+
+.icon {
+    font-size: 1.5em;
+}
+
+/* 游戏区域 */
+.game-area {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#gameCanvas {
+    border: 3px solid #8B4513;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 50%, #8B4513 50%, #A0522D 100%);
+    cursor: pointer;
+    display: block;
+    margin: 0 auto;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+/* 控制面板 */
+.control-panel {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.tool-section, .achievement-section {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+h3 {
+    color: #FFD700;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.5em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 工具列表 */
+.tool-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.tool-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid #8B4513;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.tool-item:hover {
+    background: rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+}
+
+.tool-icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+.tool-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #FFD700;
+    margin-bottom: 5px;
+}
+
+.tool-effect, .tool-cost {
+    color: #E0E0E0;
+    margin-bottom: 10px;
+}
+
+.upgrade-btn {
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upgrade-btn:hover {
+    background: linear-gradient(45deg, #FFA500, #FFD700);
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+}
+
+.upgrade-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 成就列表 */
+.achievement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.achievement-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid #8B4513;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+}
+
+.achievement-item.unlocked {
+    opacity: 1;
+    border-color: #FFD700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.achievement-icon {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.achievement-name {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #FFD700;
+    margin-bottom: 5px;
+}
+
+.achievement-desc {
+    color: #E0E0E0;
+    font-size: 0.9em;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .game-container {
+        padding: 10px;
+    }
+
+    .game-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .game-title {
+        font-size: 2em;
+    }
+
+    .resource-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #gameCanvas {
+        width: 100%;
+        height: auto;
+    }
+
+    .control-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .tool-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 动画效果 */
+@keyframes sparkle {
+    0% { transform: scale(0.5) rotate(0deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+    100% { transform: scale(0.5) rotate(360deg); opacity: 0; }
+}
+
+.sparkle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #FFD700, transparent);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: sparkle 0.6s ease-out;
+}
+
+/* 挖矿动画 */
+@keyframes mining {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.1) rotate(-5deg); }
+    50% { transform: scale(1.2) rotate(5deg); }
+    75% { transform: scale(1.1) rotate(-5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.mining-animation {
+    animation: mining 0.5s ease-in-out;
+}
