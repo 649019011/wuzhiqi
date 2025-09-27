@@ -284,6 +284,11 @@
             50% { transform: scale(1.1) rotate(5deg); }
         }
 
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+
         .mower {
             position: absolute;
             width: 50px;
@@ -812,13 +817,22 @@
             }
 
             plantFlower(x, y) {
+                console.log('尝试种花:', x, y, '种花模式:', this.plantMode);
                 if (!this.plantMode) return;
 
                 const cell = this.board[y][x];
+                console.log('格子状态:', cell);
+
+                // 确保只有割过的草地才能种花
                 if (cell.type === 'grass' && cell.height === 'cut' && !cell.hasFlower) {
+                    console.log('开始种植花朵');
                     this.growFlower(x, y);
                     this.plantMode = false;
                     this.updateSeedPacket();
+                } else {
+                    console.log('不能在这里种花，需要割过的草地');
+                    // 可以添加提示效果
+                    this.showPlantHint(x, y);
                 }
             }
 
@@ -835,16 +849,38 @@
                 this.score += 50;
                 this.updateScore();
 
+                console.log('种植花朵:', cell.flower);
                 this.animateFlowerGrowth(x, y);
             }
 
+            showPlantHint(x, y) {
+                // 显示种植提示效果
+                const hint = document.createElement('div');
+                hint.style.position = 'absolute';
+                hint.style.left = `${x * this.cellSize}px`;
+                hint.style.top = `${y * this.cellSize}px`;
+                hint.style.color = 'red';
+                hint.style.fontSize = '12px';
+                hint.style.zIndex = '100';
+                hint.textContent = '❌';
+                hint.style.animation = 'fadeOut 1s ease-out forwards';
+
+                document.getElementById('gameBoard').appendChild(hint);
+
+                setTimeout(() => hint.remove(), 1000);
+            }
+
             animateFlowerGrowth(x, y) {
-                const cellElement = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                const cell = this.board[y][x];
                 const flower = document.createElement('div');
                 flower.className = `flower stage1 ${this.flowerTypes[this.currentFlowerIndex]}`;
                 flower.style.left = `${x * this.cellSize + 5}px`;
                 flower.style.top = `${y * this.cellSize + 5}px`;
+                flower.dataset.x = x;
+                flower.dataset.y = y;
                 document.getElementById('gameBoard').appendChild(flower);
+
+                console.log('创建花朵元素:', flower);
 
                 // 花朵生长动画
                 let stage = 1;
@@ -855,8 +891,12 @@
                         return;
                     }
 
+                    cell.flower.stage = stage;
                     flower.className = `flower stage${stage} ${this.flowerTypes[this.currentFlowerIndex]}`;
+                    console.log('花朵生长到阶段:', stage);
                 }, 1500);
+
+                cell.flower.growthTimer = growthInterval;
             }
 
             updateCell(x, y) {
@@ -1122,13 +1162,14 @@
                     }
                     bug.eating = false;
                 } else {
-                    // 寻找草地吃草
-                    if (!bug.eating && Math.random() < 0.1) {
-                        const grassCell = this.findNearbyGrass(bug.x, bug.y);
-                        if (grassCell) {
-                            bug.targetX = grassCell.x;
-                            bug.targetY = grassCell.y;
+                    // 寻找食物（花朵或草地）
+                    if (!bug.eating && Math.random() < 0.15) {
+                        const foodCell = this.findNearbyFood(bug.x, bug.y);
+                        if (foodCell) {
+                            bug.targetX = foodCell.x;
+                            bug.targetY = foodCell.y;
                             bug.eating = true;
+                            bug.targetType = foodCell.type; // 记录目标类型
                         }
                     }
                 }
@@ -1138,7 +1179,7 @@
                 bug.targetY = Math.max(0, Math.min(this.boardHeight - 1, bug.targetY));
             }
 
-            findNearbyGrass(x, y) {
+            findNearbyFood(x, y) {
                 const searchRadius = 3;
                 for (let dy = -searchRadius; dy <= searchRadius; dy++) {
                     for (let dx = -searchRadius; dx <= searchRadius; dx++) {
@@ -1148,8 +1189,14 @@
                         if (newX >= 0 && newX < this.boardWidth &&
                             newY >= 0 && newY < this.boardHeight) {
                             const cell = this.board[newY][newX];
+
+                            // 优先寻找成熟的花朵
+                            if (cell.hasFlower && cell.flower && cell.flower.stage === 4) {
+                                return { x: newX, y: newY, type: 'flower' };
+                            }
+                            // 其次寻找草地
                             if (cell.type === 'grass' && cell.height !== 'cut') {
-                                return { x: newX, y: newY };
+                                return { x: newX, y: newY, type: 'grass' };
                             }
                         }
                     }
@@ -1169,9 +1216,13 @@
                     bug.x = bug.targetX;
                     bug.y = bug.targetY;
 
-                    // 吃草行为
+                    // 吃食行为
                     if (bug.eating) {
-                        this.bugEatGrass(bug);
+                        if (bug.targetType === 'flower') {
+                            this.bugEatFlower(bug);
+                        } else {
+                            this.bugEatGrass(bug);
+                        }
                     } else {
                         // 随机移动
                         if (Math.random() < 0.05) {
@@ -1220,6 +1271,49 @@
                         }
                     }
                 }
+            }
+
+            bugEatFlower(bug) {
+                const gridX = Math.floor(bug.x);
+                const gridY = Math.floor(bug.y);
+
+                if (gridX >= 0 && gridX < this.boardWidth &&
+                    gridY >= 0 && gridY < this.boardHeight) {
+                    const cell = this.board[gridY][gridX];
+                    if (cell.hasFlower && cell.flower) {
+                        // 降低花朵生长阶段
+                        if (cell.flower.stage > 1) {
+                            cell.flower.stage--;
+                            this.updateFlowerDisplay(gridX, gridY);
+                        } else {
+                            // 花朵被完全吃掉
+                            this.destroyFlower(gridX, gridY);
+                            bug.eating = false;
+                        }
+                    }
+                }
+            }
+
+            updateFlowerDisplay(x, y) {
+                const cell = this.board[y][x];
+                const flowerElement = document.querySelector(`[data-x="${x}"][data-y="${y}"].flower`);
+                if (flowerElement && cell.flower) {
+                    flowerElement.className = `flower stage${cell.flower.stage} ${cell.flower.type}`;
+                }
+            }
+
+            destroyFlower(x, y) {
+                const cell = this.board[y][x];
+                cell.hasFlower = false;
+                cell.flower = null;
+
+                const flowerElement = document.querySelector(`[data-x="${x}"][data-y="${y}"].flower`);
+                if (flowerElement) {
+                    flowerElement.remove();
+                }
+
+                this.flowersPlanted--;
+                this.updateScore();
             }
 
             clearAllBugs() {
