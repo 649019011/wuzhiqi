@@ -16,6 +16,18 @@
     {
       "src": "farm-game.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "gold-mining.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "style.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "script.js",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -46,6 +58,18 @@
     {
       "src": "/farm-game",
       "dest": "/farm-game.html"
+    },
+    {
+      "src": "/gold-mining",
+      "dest": "/gold-mining.html"
+    },
+    {
+      "src": "/style.css",
+      "dest": "/style.css"
+    },
+    {
+      "src": "/script.js",
+      "dest": "/script.js"
     }
   ]
 }
