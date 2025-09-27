@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快乐农场 - 种植收获小游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #87CEEB 0%, #98FB98 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            font-size: 24px;
+            color: #2E8B57;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .stat-item {
+            background: #f0f8ff;
+            padding: 6px 12px;
+            border-radius: 12px;
+            border: 2px solid #87CEEB;
+            font-weight: bold;
+            color: #2E8B57;
+            font-size: 12px;
+        }
+
+        .game-main {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .farm-area {
+            flex: 1;
+            background: #8B4513;
+            border: 3px solid #654321;
+            border-radius: 10px;
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .shop-panel {
+            width: 150px;
+            background: #f0f8ff;
+            border: 2px solid #87CEEB;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .shop-title {
+            font-size: 14px;
+            color: #2E8B57;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .shop-item {
+            background: white;
+            border: 2px solid #98FB98;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .shop-item:hover {
+            transform: scale(1.05);
+            border-color: #32CD32;
+        }
+
+        .shop-item.selected {
+            background: #98FB98;
+            border-color: #32CD32;
+        }
+
+        .shop-item-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .shop-item-name {
+            font-size: 11px;
+            color: #2E8B57;
+            font-weight: bold;
+        }
+
+        .shop-item-price {
+            font-size: 10px;
+            color: #FF6347;
+        }
+
+        .farm-plot {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 2px solid #654321;
+            background: #D2691E;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .farm-plot:hover {
+            border-color: #FFD700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .farm-plot.planted {
+            background: #8B4513;
+        }
+
+        .farm-plot.ready {
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+
+        .crop {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+            border-radius: 50%;
+        }
+
+        .grass-seed {
+            background: #8B4513;
+            width: 8px;
+            height: 8px;
+        }
+
+        .grass-sprout {
+            background: #228B22;
+            width: 15px;
+            height: 15px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        }
+
+        .grass-grown {
+            background: linear-gradient(45deg, #32CD32, #228B22);
+            width: 35px;
+            height: 25px;
+            border-radius: 0;
+        }
+
+        .corn-seed {
+            background: #F4A460;
+            width: 10px;
+            height: 10px;
+        }
+
+        .corn-sprout {
+            background: #9ACD32;
+            width: 18px;
+            height: 18px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        }
+
+        .corn-growing {
+            background: linear-gradient(to top, #9ACD32 60%, #FFD700 40%);
+            width: 25px;
+            height: 30px;
+            border-radius: 0;
+        }
+
+        .corn-ready {
+            background: linear-gradient(to top, #228B22 40%, #FFD700 60%);
+            width: 30px;
+            height: 35px;
+            border-radius: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .fruit-seed {
+            background: #8B4513;
+            width: 8px;
+            height: 8px;
+        }
+
+        .fruit-sprout {
+            background: #228B22;
+            width: 15px;
+            height: 15px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        }
+
+        .fruit-flower {
+            background: radial-gradient(circle, #FFB6C1, #FF69B4);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            animation: flowerBloom 2s infinite ease-in-out;
+        }
+
+        .fruit-growing {
+            background: radial-gradient(circle, #98FB98, #32CD32);
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+        }
+
+        .fruit-ready {
+            background: radial-gradient(circle, #FF6347, #FF4500);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            animation: fruitGlow 3s infinite ease-in-out;
+        }
+
+        @keyframes flowerBloom {
+            0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            50% { transform: translate(-50%, -50%) scale(1.1) rotate(5deg); }
+        }
+
+        @keyframes fruitGlow {
+            0%, 100% { box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+            50% { box-shadow: 0 0 15px rgba(255, 99, 71, 0.8); }
+        }
+
+        .farmer {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #FFB6C1;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            transition: all 0.2s ease;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .farmer::before {
+            content: '👨‍🌾';
+        }
+
+        .farmer.moving {
+            animation: farmerWalk 0.5s infinite ease-in-out;
+        }
+
+        @keyframes farmerWalk {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: 2px solid #32CD32;
+            background: white;
+            color: #32CD32;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+            background: #32CD32;
+            color: white;
+        }
+
+        .action-btn.selected {
+            background: #32CD32;
+            color: white;
+        }
+
+        .instructions {
+            background: #f0f8ff;
+            border: 2px solid #87CEEB;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .instructions h4 {
+            color: #2E8B57;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .instructions p {
+            color: #666;
+            margin-bottom: 3px;
+            font-size: 11px;
+        }
+
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .control-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 45px);
+            grid-template-rows: repeat(3, 45px);
+            gap: 5px;
+        }
+
+        .control-btn-pad {
+            background: #87CEEB;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn-pad:hover {
+            background: #4682B4;
+            transform: scale(1.1);
+        }
+
+        .control-btn-pad:active {
+            transform: scale(0.95);
+        }
+
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+            animation: messageShow 2s ease-in-out;
+        }
+
+        @keyframes messageShow {
+            0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20%, 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-controls {
+                display: block;
+            }
+
+            .game-container {
+                padding: 10px;
+            }
+
+            .game-main {
+                flex-direction: column;
+            }
+
+            .shop-panel {
+                width: 100%;
+                order: 2;
+            }
+
+            .farm-area {
+                height: 300px;
+                order: 1;
+            }
+
+            .farm-plot {
+                width: 45px;
+                height: 45px;
+            }
+
+            .farmer {
+                width: 30px;
+                height: 30px;
+                font-size: 18px;
+            }
+
+            .game-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">🌱 快乐农场 🌽</h1>
+        </div>
+
+        <div class="game-stats">
+            <div class="stat-item">
+                <span>💰 金币: </span>
+                <span id="coins">100</span>
+            </div>
+            <div class="stat-item">
+                <span>🌱 种子: </span>
+                <span id="seeds">5</span>
+            </div>
+            <div class="stat-item">
+                <span>🌾 收获: </span>
+                <span id="harvest">0</span>
+            </div>
+            <div class="stat-item">
+                <span>🏆 等级: </span>
+                <span id="level">1</span>
+            </div>
+        </div>
+
+        <div class="game-main">
+            <div class="farm-area" id="farmArea"></div>
+
+            <div class="shop-panel">
+                <div class="shop-title">🛒 商店</div>
+
+                <div class="shop-item selected" data-seed="grass" data-price="5">
+                    <div class="shop-item-icon">🌱</div>
+                    <div class="shop-item-name">草种子</div>
+                    <div class="shop-item-price">💰 5</div>
+                </div>
+
+                <div class="shop-item" data-seed="corn" data-price="15">
+                    <div class="shop-item-icon">🌽</div>
+                    <div class="shop-item-name">玉米种子</div>
+                    <div class="shop-item-price">💰 15</div>
+                </div>
+
+                <div class="shop-item" data-seed="fruit" data-price="25">
+                    <div class="shop-item-icon">🍎</div>
+                    <div class="shop-item-name">果树种子</div>
+                    <div class="shop-item-price">💰 25</div>
+                </div>
+
+                <div class="shop-item" data-seed="buy" data-price="10">
+                    <div class="shop-item-icon">👜</div>
+                    <div class="shop-item-name">买种子包</div>
+                    <div class="shop-item-price">💰 10</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="action-buttons">
+                <button class="action-btn selected" data-action="plant">🌱 种植</button>
+                <button class="action-btn" data-action="harvest">🌾 收获</button>
+                <button class="action-btn" data-action="water">💧 浇水</button>
+                <button class="action-btn" onclick="generateNewFarm()">🔄 新农场</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h4>🎮 游戏说明</h4>
+            <p>🚶 使用 WASD 或方向键控制农民移动</p>
+            <p>🌱 选择种子后在空地上种植作物</p>
+            <p>⏰ 等待作物成熟后收获获得金币</p>
+            <p>🛒 用金币购买更多种子扩大农场</p>
+            <p>💧 浇水可以加快作物生长速度</p>
+            <p>📱 移动设备可使用屏幕下方的虚拟方向键</p>
+        </div>
+    </div>
+
+    <div class="mobile-controls">
+        <div class="control-pad">
+            <div></div>
+            <button class="control-btn-pad" onclick="moveFarmer(0, -1)">↑</button>
+            <div></div>
+            <button class="control-btn-pad" onclick="moveFarmer(-1, 0)">←</button>
+            <div></div>
+            <button class="control-btn-pad" onclick="moveFarmer(1, 0)">→</button>
+            <div></div>
+            <button class="control-btn-pad" onclick="moveFarmer(0, 1)">↓</button>
+            <div></div>
+        </div>
+    </div>
+
+    <div class="message" id="message"></div>
+
+    <script>
+        class FarmGame {
+            constructor() {
+                this.farmWidth = 10;
+                this.farmHeight = 6;
+                this.cellSize = 60;
+                this.farm = [];
+                this.farmer = { x: 0, y: 0 };
+                this.selectedSeed = 'grass';
+                this.currentAction = 'plant';
+                this.coins = 100;
+                this.seeds = { grass: 5, corn: 0, fruit: 0 };
+                this.harvestCount = 0;
+                this.level = 1;
+                this.seedPrices = { grass: 5, corn: 15, fruit: 25 };
+                this.cropValues = { grass: 10, corn: 30, fruit: 50 };
+                this.growthTimes = { grass: 3000, corn: 6000, fruit: 10000 };
+
+                this.initFarm();
+                this.bindEvents();
+                this.startGameLoop();
+            }
+
+            initFarm() {
+                const farmArea = document.getElementById('farmArea');
+                farmArea.innerHTML = '';
+                this.farm = [];
+
+                // 创建农田地块
+                for (let y = 0; y < this.farmHeight; y++) {
+                    this.farm[y] = [];
+                    for (let x = 0; x < this.farmWidth; x++) {
+                        this.farm[y][x] = {
+                            planted: false,
+                            cropType: null,
+                            growthStage: 0,
+                            plantTime: null,
+                            watered: false
+                        };
+
+                        const plot = document.createElement('div');
+                        plot.className = 'farm-plot';
+                        plot.style.left = `${x * this.cellSize}px`;
+                        plot.style.top = `${y * this.cellSize}px`;
+                        plot.dataset.x = x;
+                        plot.dataset.y = y;
+                        plot.addEventListener('click', () => this.handlePlotClick(x, y));
+                        farmArea.appendChild(plot);
+                    }
+                }
+
+                // 创建农民
+                this.createFarmer();
+                this.updateStats();
+            }
+
+            createFarmer() {
+                const existingFarmer = document.querySelector('.farmer');
+                if (existingFarmer) {
+                    existingFarmer.remove();
+                }
+
+                const farmer = document.createElement('div');
+                farmer.className = 'farmer';
+                farmer.style.left = `${this.farmer.x * this.cellSize + 10}px`;
+                farmer.style.top = `${this.farmer.y * this.cellSize + 10}px`;
+                document.getElementById('farmArea').appendChild(farmer);
+            }
+
+            moveFarmer(dx, dy) {
+                const newX = this.farmer.x + dx;
+                const newY = this.farmer.y + dy;
+
+                if (newX >= 0 && newX < this.farmWidth && newY >= 0 && newY < this.farmHeight) {
+                    this.farmer.x = newX;
+                    this.farmer.y = newY;
+
+                    const farmer = document.querySelector('.farmer');
+                    farmer.style.left = `${this.farmer.x * this.cellSize + 10}px`;
+                    farmer.style.top = `${this.farmer.y * this.cellSize + 10}px`;
+
+                    farmer.classList.add('moving');
+                    setTimeout(() => farmer.classList.remove('moving'), 200);
+                }
+            }
+
+            handlePlotClick(x, y) {
+                const plot = this.farm[y][x];
+
+                switch (this.currentAction) {
+                    case 'plant':
+                        this.plantCrop(x, y);
+                        break;
+                    case 'harvest':
+                        this.harvestCrop(x, y);
+                        break;
+                    case 'water':
+                        this.waterCrop(x, y);
+                        break;
+                }
+            }
+
+            plantCrop(x, y) {
+                const plot = this.farm[y][x];
+
+                if (plot.planted) {
+                    this.showMessage('这里已经种植了作物！');
+                    return;
+                }
+
+                if (this.seeds[this.selectedSeed] <= 0) {
+                    this.showMessage('种子不足！');
+                    return;
+                }
+
+                this.seeds[this.selectedSeed]--;
+                plot.planted = true;
+                plot.cropType = this.selectedSeed;
+                plot.growthStage = 0;
+                plot.plantTime = Date.now();
+                plot.watered = false;
+
+                this.updatePlot(x, y);
+                this.updateStats();
+                this.showMessage(`种植了${this.getCropName(this.selectedSeed)}！`);
+
+                // 开始生长
+                this.startGrowth(x, y);
+            }
+
+            harvestCrop(x, y) {
+                const plot = this.farm[y][x];
+
+                if (!plot.planted) {
+                    this.showMessage('这里没有作物！');
+                    return;
+                }
+
+                if (plot.growthStage < 3) {
+                    this.showMessage('作物还未成熟！');
+                    return;
+                }
+
+                // 收获作物
+                const value = this.cropValues[plot.cropType];
+                this.coins += value;
+                this.harvestCount++;
+
+                // 重置地块
+                plot.planted = false;
+                plot.cropType = null;
+                plot.growthStage = 0;
+                plot.plantTime = null;
+                plot.watered = false;
+
+                this.updatePlot(x, y);
+                this.updateStats();
+                this.checkLevelUp();
+                this.showMessage(`收获了${this.getCropName(plot.cropType)}，获得${value}金币！`);
+            }
+
+            waterCrop(x, y) {
+                const plot = this.farm[y][x];
+
+                if (!plot.planted) {
+                    this.showMessage('这里没有作物！');
+                    return;
+                }
+
+                if (plot.watered) {
+                    this.showMessage('已经浇过水了！');
+                    return;
+                }
+
+                plot.watered = true;
+                this.updatePlot(x, y);
+                this.showMessage('浇水完成！作物生长加速！');
+
+                // 加速生长
+                this.accelerateGrowth(x, y);
+            }
+
+            startGrowth(x, y) {
+                const plot = this.farm[y][x];
+                const growthTime = plot.watered ? this.growthTimes[plot.cropType] * 0.7 : this.growthTimes[plot.cropType];
+
+                const growthInterval = setInterval(() => {
+                    if (!plot.planted || plot.growthStage >= 3) {
+                        clearInterval(growthInterval);
+                        return;
+                    }
+
+                    plot.growthStage++;
+                    this.updatePlot(x, y);
+
+                    if (plot.growthStage === 3) {
+                        this.showMessage(`${this.getCropName(plot.cropType)}成熟了！`);
+                        this.highlightPlot(x, y);
+                    }
+                }, growthTime / 3);
+            }
+
+            accelerateGrowth(x, y) {
+                const plot = this.farm[y][x];
+                if (plot.planted && plot.growthStage < 3) {
+                    plot.growthStage = Math.min(3, plot.growthStage + 1);
+                    this.updatePlot(x, y);
+                }
+            }
+
+            updatePlot(x, y) {
+                const plotElement = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                const plot = this.farm[y][x];
+
+                plotElement.className = 'farm-plot';
+                plotElement.innerHTML = '';
+
+                if (plot.planted) {
+                    plotElement.classList.add('planted');
+
+                    const crop = document.createElement('div');
+                    crop.className = `crop ${plot.cropType}-stage${plot.growthStage}`;
+                    plotElement.appendChild(crop);
+
+                    if (plot.watered) {
+                        crop.style.filter = 'brightness(1.2)';
+                    }
+                }
+            }
+
+            highlightPlot(x, y) {
+                const plotElement = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                plotElement.classList.add('ready');
+
+                setTimeout(() => {
+                    plotElement.classList.remove('ready');
+                }, 3000);
+            }
+
+            getCropName(cropType) {
+                const names = {
+                    grass: '草',
+                    corn: '玉米',
+                    fruit: '水果'
+                };
+                return names[cropType] || '作物';
+            }
+
+            updateStats() {
+                document.getElementById('coins').textContent = this.coins;
+                document.getElementById('seeds').textContent =
+                    Object.values(this.seeds).reduce((sum, seeds) => sum + seeds, 0);
+                document.getElementById('harvest').textContent = this.harvestCount;
+                document.getElementById('level').textContent = this.level;
+            }
+
+            checkLevelUp() {
+                const newLevel = Math.floor(this.harvestCount / 10) + 1;
+                if (newLevel > this.level) {
+                    this.level = newLevel;
+                    this.coins += newLevel * 20;
+                    this.showMessage(`升级到${newLevel}级！获得${newLevel * 20}金币奖励！`);
+                }
+            }
+
+            showMessage(text) {
+                const messageElement = document.getElementById('message');
+                messageElement.textContent = text;
+                messageElement.classList.add('show');
+
+                setTimeout(() => {
+                    messageElement.classList.remove('show');
+                }, 2000);
+            }
+
+            startGameLoop() {
+                // 游戏主循环，定期更新
+                setInterval(() => {
+                    // 可以在这里添加定期事件，如随机天气等
+                }, 1000);
+            }
+
+            bindEvents() {
+                // 键盘控制
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key.toLowerCase()) {
+                        case 'w':
+                        case 'arrowup':
+                            e.preventDefault();
+                            this.moveFarmer(0, -1);
+                            break;
+                        case 's':
+                        case 'arrowdown':
+                            e.preventDefault();
+                            this.moveFarmer(0, 1);
+                            break;
+                        case 'a':
+                        case 'arrowleft':
+                            e.preventDefault();
+                            this.moveFarmer(-1, 0);
+                            break;
+                        case 'd':
+                        case 'arrowright':
+                            e.preventDefault();
+                            this.moveFarmer(1, 0);
+                            break;
+                        case '1':
+                            this.setAction('plant');
+                            break;
+                        case '2':
+                            this.setAction('harvest');
+                            break;
+                        case '3':
+                            this.setAction('water');
+                            break;
+                    }
+                });
+
+                // 动作按钮
+                document.querySelectorAll('.action-btn[data-action]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.setAction(e.target.dataset.action);
+                    });
+                });
+
+                // 商店项目
+                document.querySelectorAll('.shop-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        this.handleShopClick(e.currentTarget);
+                    });
+                });
+
+                // 触摸控制
+                this.setupTouchControls();
+            }
+
+            setAction(action) {
+                this.currentAction = action;
+                document.querySelectorAll('.action-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                document.querySelector(`[data-action="${action}"]`).classList.add('selected');
+            }
+
+            handleShopClick(shopItem) {
+                const seedType = shopItem.dataset.seed;
+                const price = parseInt(shopItem.dataset.price);
+
+                if (seedType === 'buy') {
+                    // 购买种子包
+                    if (this.coins >= price) {
+                        this.coins -= price;
+                        this.seeds.grass += 3;
+                        this.seeds.corn += 1;
+                        this.updateStats();
+                        this.showMessage('购买了种子包！');
+                    } else {
+                        this.showMessage('金币不足！');
+                    }
+                    return;
+                }
+
+                // 选择种子类型
+                this.selectedSeed = seedType;
+                document.querySelectorAll('.shop-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                shopItem.classList.add('selected');
+
+                // 购买种子
+                if (this.coins >= price) {
+                    this.coins -= price;
+                    this.seeds[seedType]++;
+                    this.updateStats();
+                    this.showMessage(`购买了${this.getCropName(seedType)}种子！`);
+                } else {
+                    this.showMessage('金币不足！');
+                }
+            }
+
+            setupTouchControls() {
+                const farmArea = document.getElementById('farmArea');
+                let touchStartX = 0;
+                let touchStartY = 0;
+
+                farmArea.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                });
+
+                farmArea.addEventListener('touchend', (e) => {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const touchEndY = e.changedTouches[0].clientY;
+
+                    const deltaX = touchEndX - touchStartX;
+                    const deltaY = touchEndY - touchStartY;
+
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        if (deltaX > 30) this.moveFarmer(1, 0);
+                        else if (deltaX < -30) this.moveFarmer(-1, 0);
+                    } else {
+                        if (deltaY > 30) this.moveFarmer(0, 1);
+                        else if (deltaY < -30) this.moveFarmer(0, -1);
+                    }
+                });
+            }
+
+            generateNewFarm() {
+                this.initFarm();
+                this.showMessage('新农场已生成！');
+            }
+        }
+
+        // 全局游戏实例
+        let game = new FarmGame();
+
+        // 全局函数
+        function generateNewFarm() {
+            game.generateNewFarm();
+        }
+
+        function moveFarmer(dx, dy) {
+            game.moveFarmer(dx, dy);
+        }
+
+        // 防止页面滚动
+        document.addEventListener('keydown', (e) => {
+            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>
