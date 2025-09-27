@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>割草机种花小游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #87CEEB 0%, #98FB98 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-title {
+            font-size: 28px;
+            color: #2E8B57;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .score-board {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: #f0f8ff;
+            padding: 8px 16px;
+            border-radius: 15px;
+            border: 2px solid #87CEEB;
+            font-weight: bold;
+            color: #2E8B57;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            border: 2px solid #32CD32;
+            background: white;
+            color: #32CD32;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .control-btn.active {
+            background: #32CD32;
+            color: white;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .game-board {
+            width: 100%;
+            height: 400px;
+            border: 3px solid #8B4513;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            background: #90EE90;
+        }
+
+        .grid-cell {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .grass {
+            background: linear-gradient(45deg, #228B22, #32CD32);
+            border-radius: 3px;
+        }
+
+        .grass.tall {
+            background: linear-gradient(45deg, #006400, #228B22);
+            height: 35px;
+        }
+
+        .grass.short {
+            background: linear-gradient(45deg, #90EE90, #98FB98);
+            height: 20px;
+        }
+
+        .grass.cut {
+            background: linear-gradient(45deg, #F0E68C, #BDB76B);
+            height: 10px;
+        }
+
+        .flower {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            animation: flowerGrow 2s ease-in-out;
+        }
+
+        .flower.stage1 {
+            background: #8B4513;
+            width: 8px;
+            height: 8px;
+        }
+
+        .flower.stage2 {
+            background: #228B22;
+            width: 15px;
+            height: 15px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+        }
+
+        .flower.stage3 {
+            background: radial-gradient(circle, #FFB6C1, #FF69B4);
+            width: 25px;
+            height: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .flower.stage4 {
+            background: radial-gradient(circle, #FF69B4, #FF1493);
+            width: 30px;
+            height: 30px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            animation: flowerBloom 3s infinite ease-in-out;
+        }
+
+        .flower.red { background: radial-gradient(circle, #FF69B4, #FF1493); }
+        .flower.blue { background: radial-gradient(circle, #87CEEB, #4169E1); }
+        .flower.yellow { background: radial-gradient(circle, #FFD700, #FFA500); }
+        .flower.purple { background: radial-gradient(circle, #DDA0DD, #8B008B); }
+        .flower.white { background: radial-gradient(circle, #FFFFFF, #F0F8FF); }
+
+        @keyframes flowerGrow {
+            0% { transform: scale(0) rotate(0deg); }
+            50% { transform: scale(0.5) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        @keyframes flowerBloom {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .mower {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #FF4500, #FF6347);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .mower::before {
+            content: '🚜';
+            font-size: 30px;
+        }
+
+        .mower.mowing {
+            animation: mowing 0.5s infinite ease-in-out;
+        }
+
+        @keyframes mowing {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.05) rotate(2deg); }
+            75% { transform: scale(1.05) rotate(-2deg); }
+        }
+
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            border: 2px solid #87CEEB;
+        }
+
+        .instructions h3 {
+            color: #2E8B57;
+            margin-bottom: 10px;
+        }
+
+        .instructions p {
+            color: #666;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .seed-packet {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(45deg, #8B4513, #D2691E);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .seed-packet:hover {
+            transform: scale(1.1);
+        }
+
+        .seed-packet.selected {
+            animation: seedSelected 0.5s infinite ease-in-out;
+        }
+
+        @keyframes seedSelected {
+            0%, 100% { transform: scale(1.1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .control-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(3, 50px);
+            gap: 5px;
+        }
+
+        .control-btn-pad {
+            background: #87CEEB;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn-pad:hover {
+            background: #4682B4;
+            transform: scale(1.1);
+        }
+
+        .control-btn-pad:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-controls {
+                display: block;
+            }
+
+            .seed-packet {
+                bottom: 120px;
+            }
+
+            .game-board {
+                height: 300px;
+            }
+
+            .grid-cell {
+                width: 30px;
+                height: 30px;
+            }
+
+            .mower {
+                width: 40px;
+                height: 40px;
+            }
+
+            .mower::before {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">🌱 割草机种花小游戏 🌸</h1>
+        </div>
+
+        <div class="game-info">
+            <div class="score-board">
+                <div class="score-item">
+                    <span>🌿 割草: </span>
+                    <span id="grassCut">0</span>
+                </div>
+                <div class="score-item">
+                    <span>🌸 种花: </span>
+                    <span id="flowersPlanted">0</span>
+                </div>
+                <div class="score-item">
+                    <span>🌟 分数: </span>
+                    <span id="score">0</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="control-btn" onclick="generateNewField()">🌱 新草地</button>
+                <button class="control-btn" onclick="resetGame()">🔄 重新开始</button>
+            </div>
+        </div>
+
+        <div class="game-board" id="gameBoard"></div>
+
+        <div class="instructions">
+            <h3>🎮 游戏说明</h3>
+            <p>🚜 使用 WASD 或方向键控制割草机移动</p>
+            <p>🌿 驾驶割草机割草获得分数</p>
+            <p>🌸 点击右下角种子包选择种植模式，在割过的草地上种花</p>
+            <p>🌱 观察花朵从种子到绽放的完整生长过程</p>
+            <p>📱 移动设备可使用屏幕下方的虚拟方向键</p>
+        </div>
+    </div>
+
+    <div class="seed-packet" id="seedPacket" onclick="togglePlantMode()">
+        🌱
+    </div>
+
+    <div class="mobile-controls">
+        <div class="control-pad">
+            <div></div>
+            <button class="control-btn-pad" onclick="moveMower(0, -1)">↑</button>
+            <div></div>
+            <button class="control-btn-pad" onclick="moveMower(-1, 0)">←</button>
+            <div></div>
+            <button class="control-btn-pad" onclick="moveMower(1, 0)">→</button>
+            <div></div>
+            <button class="control-btn-pad" onclick="moveMower(0, 1)">↓</button>
+            <div></div>
+        </div>
+    </div>
+
+    <script>
+        class LawnMowerGame {
+            constructor() {
+                this.boardWidth = 18;
+                this.boardHeight = 10;
+                this.cellSize = 40;
+                this.board = [];
+                this.mower = { x: 0, y: 0 };
+                this.plantMode = false;
+                this.selectedFlowerType = 'red';
+                this.score = 0;
+                this.grassCut = 0;
+                this.flowersPlanted = 0;
+                this.flowerTypes = ['red', 'blue', 'yellow', 'purple', 'white'];
+                this.currentFlowerIndex = 0;
+
+                this.initGame();
+                this.bindEvents();
+            }
+
+            initGame() {
+                this.generateField();
+                this.renderBoard();
+                this.updateScore();
+            }
+
+            generateField() {
+                this.board = [];
+                const boardElement = document.getElementById('gameBoard');
+                boardElement.innerHTML = '';
+
+                // 生成随机草地
+                for (let y = 0; y < this.boardHeight; y++) {
+                    this.board[y] = [];
+                    for (let x = 0; x < this.boardWidth; x++) {
+                        const grassHeight = Math.random();
+                        let grassType = 'short';
+
+                        if (grassHeight > 0.7) grassType = 'tall';
+                        else if (grassHeight > 0.4) grassType = 'grass';
+
+                        this.board[y][x] = {
+                            type: 'grass',
+                            height: grassType,
+                            hasFlower: false,
+                            flower: null
+                        };
+
+                        const cell = document.createElement('div');
+                        cell.className = `grid-cell grass ${grassType}`;
+                        cell.style.left = `${x * this.cellSize}px`;
+                        cell.style.top = `${y * this.cellSize}px`;
+                        cell.dataset.x = x;
+                        cell.dataset.y = y;
+                        cell.addEventListener('click', (e) => this.plantFlower(x, y));
+                        boardElement.appendChild(cell);
+                    }
+                }
+
+                // 创建割草机
+                this.mower = { x: Math.floor(this.boardWidth / 2), y: Math.floor(this.boardHeight / 2) };
+                this.createMower();
+            }
+
+            createMower() {
+                const existingMower = document.querySelector('.mower');
+                if (existingMower) {
+                    existingMower.remove();
+                }
+
+                const mower = document.createElement('div');
+                mower.className = 'mower';
+                mower.style.left = `${this.mower.x * this.cellSize}px`;
+                mower.style.top = `${this.mower.y * this.cellSize}px`;
+                document.getElementById('gameBoard').appendChild(mower);
+            }
+
+            moveMower(dx, dy) {
+                const newX = this.mower.x + dx;
+                const newY = this.mower.y + dy;
+
+                if (newX >= 0 && newX < this.boardWidth && newY >= 0 && newY < this.boardHeight) {
+                    this.mower.x = newX;
+                    this.mower.y = newY;
+
+                    const mower = document.querySelector('.mower');
+                    mower.style.left = `${this.mower.x * this.cellSize}px`;
+                    mower.style.top = `${this.mower.y * this.cellSize}px`;
+
+                    this.cutGrass();
+                }
+            }
+
+            cutGrass() {
+                const x = this.mower.x;
+                const y = this.mower.y;
+                const cell = this.board[y][x];
+
+                if (cell.type === 'grass' && cell.height !== 'cut') {
+                    cell.height = 'cut';
+                    this.grassCut++;
+                    this.score += 10;
+
+                    const mower = document.querySelector('.mower');
+                    mower.classList.add('mowing');
+                    setTimeout(() => mower.classList.remove('mowing'), 500);
+
+                    this.updateCell(x, y);
+                    this.updateScore();
+                }
+            }
+
+            plantFlower(x, y) {
+                if (!this.plantMode) return;
+
+                const cell = this.board[y][x];
+                if (cell.type === 'grass' && cell.height === 'cut' && !cell.hasFlower) {
+                    this.growFlower(x, y);
+                    this.plantMode = false;
+                    this.updateSeedPacket();
+                }
+            }
+
+            growFlower(x, y) {
+                const cell = this.board[y][x];
+                cell.hasFlower = true;
+                cell.flower = {
+                    type: this.flowerTypes[this.currentFlowerIndex],
+                    stage: 0,
+                    growthTimer: null
+                };
+
+                this.flowersPlanted++;
+                this.score += 50;
+                this.updateScore();
+
+                this.animateFlowerGrowth(x, y);
+            }
+
+            animateFlowerGrowth(x, y) {
+                const cellElement = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                const flower = document.createElement('div');
+                flower.className = `flower stage1 ${this.flowerTypes[this.currentFlowerIndex]}`;
+                flower.style.left = `${x * this.cellSize + 5}px`;
+                flower.style.top = `${y * this.cellSize + 5}px`;
+                document.getElementById('gameBoard').appendChild(flower);
+
+                // 花朵生长动画
+                let stage = 1;
+                const growthInterval = setInterval(() => {
+                    stage++;
+                    if (stage > 4) {
+                        clearInterval(growthInterval);
+                        return;
+                    }
+
+                    flower.className = `flower stage${stage} ${this.flowerTypes[this.currentFlowerIndex]}`;
+                }, 1500);
+            }
+
+            updateCell(x, y) {
+                const cellElement = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                const cell = this.board[y][x];
+
+                cellElement.className = `grid-cell grass ${cell.height}`;
+            }
+
+            updateScore() {
+                document.getElementById('grassCut').textContent = this.grassCut;
+                document.getElementById('flowersPlanted').textContent = this.flowersPlanted;
+                document.getElementById('score').textContent = this.score;
+            }
+
+            togglePlantMode() {
+                this.plantMode = !this.plantMode;
+                this.currentFlowerIndex = (this.currentFlowerIndex + 1) % this.flowerTypes.length;
+                this.updateSeedPacket();
+            }
+
+            updateSeedPacket() {
+                const seedPacket = document.getElementById('seedPacket');
+                if (this.plantMode) {
+                    seedPacket.classList.add('selected');
+                    seedPacket.textContent = this.getFlowerEmoji(this.flowerTypes[this.currentFlowerIndex]);
+                } else {
+                    seedPacket.classList.remove('selected');
+                    seedPacket.textContent = '🌱';
+                }
+            }
+
+            getFlowerEmoji(type) {
+                const emojis = {
+                    red: '🌸',
+                    blue: '🌼',
+                    yellow: '🌻',
+                    purple: '🌷',
+                    white: '🌺'
+                };
+                return emojis[type] || '🌸';
+            }
+
+            bindEvents() {
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key.toLowerCase()) {
+                        case 'w':
+                        case 'arrowup':
+                            e.preventDefault();
+                            this.moveMower(0, -1);
+                            break;
+                        case 's':
+                        case 'arrowdown':
+                            e.preventDefault();
+                            this.moveMower(0, 1);
+                            break;
+                        case 'a':
+                        case 'arrowleft':
+                            e.preventDefault();
+                            this.moveMower(-1, 0);
+                            break;
+                        case 'd':
+                        case 'arrowright':
+                            e.preventDefault();
+                            this.moveMower(1, 0);
+                            break;
+                        case ' ':
+                            e.preventDefault();
+                            this.togglePlantMode();
+                            break;
+                    }
+                });
+
+                // 触摸事件支持
+                let touchStartX = 0;
+                let touchStartY = 0;
+
+                document.getElementById('gameBoard').addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                });
+
+                document.getElementById('gameBoard').addEventListener('touchend', (e) => {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const touchEndY = e.changedTouches[0].clientY;
+
+                    const deltaX = touchEndX - touchStartX;
+                    const deltaY = touchEndY - touchStartY;
+
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        if (deltaX > 30) this.moveMower(1, 0);
+                        else if (deltaX < -30) this.moveMower(-1, 0);
+                    } else {
+                        if (deltaY > 30) this.moveMower(0, 1);
+                        else if (deltaY < -30) this.moveMower(0, -1);
+                    }
+                });
+            }
+
+            reset() {
+                this.score = 0;
+                this.grassCut = 0;
+                this.flowersPlanted = 0;
+                this.plantMode = false;
+                this.currentFlowerIndex = 0;
+                this.updateSeedPacket();
+                this.generateField();
+                this.updateScore();
+            }
+        }
+
+        // 全局游戏实例
+        let game = new LawnMowerGame();
+
+        // 全局函数
+        function generateNewField() {
+            game.generateField();
+        }
+
+        function resetGame() {
+            game.reset();
+        }
+
+        function togglePlantMode() {
+            game.togglePlantMode();
+        }
+
+        function moveMower(dx, dy) {
+            game.moveMower(dx, dy);
+        }
+
+        // 防止页面滚动
+        document.addEventListener('keydown', (e) => {
+            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>
