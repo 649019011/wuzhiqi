@@ -24,6 +24,18 @@
       "dest": "/index.html"
     },
     {
+      "src": "/gomoku.html",
+      "dest": "/gomoku.html"
+    },
+    {
+      "src": "/lawn-mower-game.html",
+      "dest": "/lawn-mower-game.html"
+    },
+    {
+      "src": "/farm-game.html",
+      "dest": "/farm-game.html"
+    },
+    {
       "src": "/gomoku",
       "dest": "/gomoku.html"
     },
@@ -34,10 +46,6 @@
     {
       "src": "/farm-game",
       "dest": "/farm-game.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
     }
   ]
 }

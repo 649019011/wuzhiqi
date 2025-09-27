@@ -195,19 +195,19 @@
         </div>
 
         <div class="games-grid">
-            <a href="gomoku.html" class="game-card gomoku">
+            <a href="gomoku.html" class="game-card gomoku" onclick="navigateToGame('gomoku.html'); return false;">
                 <span class="game-icon">⚫⚪</span>
                 <h3 class="game-title">五子棋游戏</h3>
                 <p class="game-description">经典策略游戏，支持双人对战和智能AI对手，四个难度等级挑战</p>
             </a>
 
-            <a href="lawn-mower-game.html" class="game-card lawnmower">
+            <a href="lawn-mower-game.html" class="game-card lawnmower" onclick="navigateToGame('lawn-mower-game.html'); return false;">
                 <span class="game-icon">🚜</span>
                 <h3 class="game-title">割草机种花</h3>
                 <p class="game-description">驾驶割草机割草，种植美丽花朵，观察完整的生长过程</p>
             </a>
 
-            <a href="farm-game.html" class="game-card farm">
+            <a href="farm-game.html" class="game-card farm" onclick="navigateToGame('farm-game.html'); return false;">
                 <span class="game-icon">🌱</span>
                 <h3 class="game-title">快乐农场</h3>
                 <p class="game-description">经营农场，种植收获作物，体验完整的农场生活</p>
@@ -250,6 +250,47 @@
     </div>
 
     <script>
+        // 游戏导航函数
+        function navigateToGame(gameUrl) {
+            // 显示加载提示
+            showLoadingMessage();
+
+            // 延迟跳转，让用户看到反馈
+            setTimeout(() => {
+                window.location.href = gameUrl;
+            }, 500);
+        }
+
+        function showLoadingMessage() {
+            // 创建加载提示
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loading-message';
+            loadingDiv.innerHTML = `
+                <div style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                    color: white;
+                    font-size: 24px;
+                    text-align: center;
+                ">
+                    <div>
+                        <div style="font-size: 48px; margin-bottom: 20px;">🎮</div>
+                        <div>游戏加载中...</div>
+                        <div style="font-size: 14px; margin-top: 10px; opacity: 0.7;">请稍候</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(loadingDiv);
+        }
+
         // 添加页面加载动画
         document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.game-card');
@@ -263,6 +304,14 @@
                     card.style.transform = 'translateY(0)';
                 }, index * 200);
             });
+        });
+
+        // 移除加载消息（如果存在）
+        window.addEventListener('load', function() {
+            const loadingMessage = document.getElementById('loading-message');
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
         });
     </script>
 </body>
