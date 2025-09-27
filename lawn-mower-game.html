@@ -613,8 +613,8 @@
                 // 虫子系统
                 this.bugs = [];
                 this.bugsKilled = 0;
-                this.maxBugs = 5;
-                this.bugSpawnRate = 0.02;
+                this.maxBugs = 8;
+                this.bugSpawnRate = 0.05; // 提高生成率便于测试
 
                 // 守护者系统
                 this.guardians = [];
@@ -628,9 +628,10 @@
             }
 
             initGame() {
+                console.log('初始化游戏');
                 this.generateField();
-                this.renderBoard();
                 this.updateScore();
+                console.log('游戏初始化完成');
             }
 
             generateField() {
@@ -682,6 +683,14 @@
                 mower.style.left = `${this.mower.x * this.cellSize}px`;
                 mower.style.top = `${this.mower.y * this.cellSize}px`;
                 document.getElementById('gameBoard').appendChild(mower);
+            }
+
+            updateCellDisplay(x, y) {
+                const cell = this.board[y][x];
+                const cellElement = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                if (cellElement) {
+                    cellElement.className = `grid-cell grass ${cell.height}`;
+                }
             }
 
             moveMower(dx, dy) {
@@ -809,26 +818,32 @@
             }
 
             bindEvents() {
+                console.log('绑定键盘事件');
                 document.addEventListener('keydown', (e) => {
+                    console.log('按键:', e.key);
                     switch(e.key.toLowerCase()) {
                         case 'w':
                         case 'arrowup':
                             e.preventDefault();
+                            console.log('向上移动');
                             this.moveMower(0, -1);
                             break;
                         case 's':
                         case 'arrowdown':
                             e.preventDefault();
+                            console.log('向下移动');
                             this.moveMower(0, 1);
                             break;
                         case 'a':
                         case 'arrowleft':
                             e.preventDefault();
+                            console.log('向左移动');
                             this.moveMower(-1, 0);
                             break;
                         case 'd':
                         case 'arrowright':
                             e.preventDefault();
+                            console.log('向右移动');
                             this.moveMower(1, 0);
                             break;
                         case ' ':
@@ -1146,6 +1161,12 @@
                 this.guardians.push(guardian);
                 this.createGuardianElement(guardian);
                 this.updateGuardianDisplay();
+
+                // 立即生成一些虫子用于测试
+                console.log('生成测试虫子');
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => this.spawnBug(), i * 500);
+                }
             }
 
             addGuardian() {
@@ -1280,6 +1301,7 @@
 
             // 游戏循环
             startGameLoop() {
+                console.log('游戏循环已启动');
                 setInterval(() => {
                     this.updateBugs();
                     this.updateGuardians();
@@ -1321,16 +1343,7 @@
             game.addGuardian();
         }
 
-        // 防止页面滚动
-        document.addEventListener('keydown', (e) => {
-            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                e.preventDefault();
-            }
-        });
-
-        document.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-        }, { passive: false });
+        // 注意：键盘事件处理已移至游戏类的bindEvents方法中
     </script>
 </body>
 </html>
