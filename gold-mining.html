@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黄金挖矿大亨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- 游戏头部信息 -->
+        <div class="game-header">
+            <div class="game-title">黄金挖矿大亨</div>
+            <div class="resource-info">
+                <div class="gold-info">
+                    <span class="icon">💰</span>
+                    <span id="goldCount">0</span> 黄金
+                </div>
+                <div class="level-info">
+                    <span class="icon">⛏️</span>
+                    <span id="toolLevel">1</span> 级工具
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏主画布 -->
+        <div class="game-area">
+            <canvas id="gameCanvas" width="800" height="500"></canvas>
+        </div>
+
+        <!-- 游戏控制面板 -->
+        <div class="control-panel">
+            <div class="tool-section">
+                <h3>工具升级</h3>
+                <div class="tool-list">
+                    <div class="tool-item" data-tool="pickaxe">
+                        <div class="tool-icon">⛏️</div>
+                        <div class="tool-name">矿工镐</div>
+                        <div class="tool-effect">效率: <span id="pickaxeEfficiency">1.0x</span></div>
+                        <div class="tool-cost">升级: <span id="pickaxeCost">10</span> 黄金</div>
+                        <button class="upgrade-btn" onclick="upgradeTool('pickaxe')">升级</button>
+                    </div>
+                    <div class="tool-item" data-tool="drill">
+                        <div class="tool-icon">🔧</div>
+                        <div class="tool-name">钻探机</div>
+                        <div class="tool-effect">效率: <span id="drillEfficiency">1.5x</span></div>
+                        <div class="tool-cost">升级: <span id="drillCost">25</span> 黄金</div>
+                        <button class="upgrade-btn" onclick="upgradeTool('drill')">升级</button>
+                    </div>
+                    <div class="tool-item" data-tool="excavator">
+                        <div class="tool-icon">🚜</div>
+                        <div class="tool-name">挖掘机</div>
+                        <div class="tool-effect">效率: <span id="excavatorEfficiency">2.0x</span></div>
+                        <div class="tool-cost">升级: <span id="excavatorCost">50</span> 黄金</div>
+                        <button class="upgrade-btn" onclick="upgradeTool('excavator')">升级</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="achievement-section">
+                <h3>成就</h3>
+                <div class="achievement-list">
+                    <div class="achievement-item" id="achievement1">
+                        <div class="achievement-icon">🌟</div>
+                        <div class="achievement-name">初级矿工</div>
+                        <div class="achievement-desc">挖掘100黄金</div>
+                    </div>
+                    <div class="achievement-item" id="achievement2">
+                        <div class="achievement-icon">💎</div>
+                        <div class="achievement-name">黄金猎人</div>
+                        <div class="achievement-desc">挖掘500黄金</div>
+                    </div>
+                    <div class="achievement-item" id="achievement3">
+                        <div class="achievement-icon">🏆</div>
+                        <div class="achievement-name">矿业大亨</div>
+                        <div class="achievement-desc">挖掘1000黄金</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
