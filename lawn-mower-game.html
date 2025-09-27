@@ -291,6 +291,12 @@
             cursor: pointer;
             font-size: 20px;
             transition: all 0.2s ease;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         .control-btn-pad:hover {
@@ -755,6 +761,7 @@
                 // 为移动端控制按钮添加触摸支持
                 const controlButtons = document.querySelectorAll('.control-btn-pad');
                 controlButtons.forEach(button => {
+                    // 防止触摸时触发默认行为
                     button.addEventListener('touchstart', (e) => {
                         e.preventDefault();
                         button.style.background = '#4682B4';
@@ -763,6 +770,18 @@
                     button.addEventListener('touchend', (e) => {
                         e.preventDefault();
                         button.style.background = '#87CEEB';
+
+                        // 触发按钮的点击事件
+                        const clickEvent = new Event('click', {
+                            bubbles: true,
+                            cancelable: true
+                        });
+                        button.dispatchEvent(clickEvent);
+                    });
+
+                    // 确保点击事件能正常工作
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
                     });
                 });
             }
@@ -796,6 +815,7 @@
         }
 
         function moveMower(dx, dy) {
+            console.log('移动割草机:', dx, dy); // 调试信息
             game.moveMower(dx, dy);
         }
 
